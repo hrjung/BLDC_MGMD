@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?fileVersion 3.1.0?>
+
+<ManagedProjectBuildInfo>
+<project id="PM_Sensorless.com.ti.ccstudio.buildDefinitions.C2000.ProjectType.370153733" name="C2000" projectType="com.ti.ccstudio.buildDefinitions.C2000.ProjectType">
+<configuration artifactExtension="out" artifactName="BLDC_Sensored_F2803x" description="" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879" name="F2803x_RAM" parent="com.ti.ccstudio.buildDefinitions.C2000.Debug">
+<toolChain id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.DebugToolchain.268088409" name="TI Code Generation Tools" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.DebugToolchain" targetTool="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908">
+<option id="com.ti.ccstudio.buildDefinitions.core.OPT_TAGS.353318783" superClass="com.ti.ccstudio.buildDefinitions.core.OPT_TAGS" valueType="stringList">
+<listOptionValue builtIn="false" value="DEVICE_CONFIGURATION_ID=TMS320C28XX.TMS320F28035"/>
+<listOptionValue builtIn="false" value="DEVICE_ENDIANNESS=little"/>
+<listOptionValue builtIn="false" value="OUTPUT_FORMAT=COFF"/>
+<listOptionValue builtIn="false" value="CCS_MBS_VERSION=4.2.0"/>
+<listOptionValue builtIn="false" value="LINKER_COMMAND_FILE="/>
+<listOptionValue builtIn="false" value="RUNTIME_SUPPORT_LIBRARY=libc.a"/>
+<listOptionValue builtIn="false" value="IS_ELF=false"/>
+<listOptionValue builtIn="false" value="PROJECT_KIND=com.ti.ccstudio.managedbuild.core.ProjectKind_Executable"/>
+<listOptionValue builtIn="false" value="OUTPUT_TYPE=executable"/>
+<listOptionValue builtIn="false" value="IS_ASSEMBLY_ONLY=false"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION.1388482204" superClass="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION" value="5.2.10" valueType="string"/>
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug">
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.DIAG_WARNING.1154054471" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.DIAG_WARNING" valueType="stringList">
+<listOptionValue builtIn="false" value="225"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.LARGE_MEMORY_MODEL.491969619" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.LARGE_MEMORY_MODEL" value="true" valueType="boolean"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.UNIFIED_MEMORY.613232347" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.UNIFIED_MEMORY" value="true" valueType="boolean"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.SILICON_VERSION.422147217" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.SILICON_VERSION" value="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.SILICON_VERSION.28" valueType="enumerated"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.CLA_SUPPORT.256647083" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.CLA_SUPPORT" value="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.CLA_SUPPORT.cla0" valueType="enumerated"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.INCLUDE_PATH.2137583512" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.INCLUDE_PATH" valueType="includePath">
+<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}\libs\math\IQmath\v15c\include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}\development_kits\~SupportFiles\F2803x_headers&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}\device_support\f2803x\v124\DSP2803x_headers\include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}\device_support\f2803x\v124\DSP2803x_common\include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}\libs\app_libs\motor_control\math_blocks\v3.1&quot;"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.KEEP_ASM.1201180876" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.KEEP_ASM" value="true" valueType="boolean"/>
+</tool>
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug">
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.STACK_SIZE.880709550" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.STACK_SIZE" value="0x380" valueType="string"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.OUTPUT_FILE.1398758711" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.OUTPUT_FILE" value="&quot;BLDC_Sensored_F2803x.out&quot;" valueType="string"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.MAP_FILE.1867155165" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.MAP_FILE" value="&quot;BLDC_Sensored_F2803x.map&quot;" valueType="string"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.generatedLinkerCommandFiles.16680470" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.generatedLinkerCommandFiles" valueType="libs">
+<listOptionValue builtIn="false" value="&quot;$(GEN_CMDS_QUOTED)&quot;"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.SEARCH_PATH.668288315" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.SEARCH_PATH" valueType="stringList">
+<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/lib&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.LIBRARY.4168549" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.LIBRARY" valueType="libs">
+<listOptionValue builtIn="false" value="&quot;libc.a&quot;"/>
+</option>
+</tool>
+<macros expandEnvironmentMacros="true"/>
+</toolChain>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/F2806x_GlobalVariableDefs.c" name="F2806x_GlobalVariableDefs.c" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F2806x_GlobalVariableDefs.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/F2806x_GlobalVariableDefs.c">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/F2806x_GlobalVariableDefs.c" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/F2806x_Headers_nonBIOS.cmd" name="F2806x_Headers_nonBIOS.cmd" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F2806x_Headers_nonBIOS.cmd" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F2806x_Headers_nonBIOS.cmd">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F2806x_Headers_nonBIOS.cmd" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/F2806x_usDelay.asm" name="F2806x_usDelay.asm" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F2806x_usDelay.asm" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/F2806x_usDelay.asm">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/F2806x_usDelay.asm" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/IQmath_fpu32.lib" name="IQmath_fpu32.lib" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/IQmath_fpu32.lib" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/IQmath_fpu32.lib">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/IQmath_fpu32.lib" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/BLDC_Sensored-DevInit_F2806x.c" name="BLDC_Sensored-DevInit_F2806x.c" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/BLDC_Sensored-DevInit_F2806x.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/BLDC_Sensored-DevInit_F2806x.c">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/BLDC_Sensored-DevInit_F2806x.c" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD" name="F28035_FLASH_BLDC_Sensored.CMD" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD" name="F2806x_FLASH_BLDC_Sensored.CMD" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/F2806x_RAM_BLDC_Sensored.CMD" name="F2806x_RAM_BLDC_Sensored.CMD" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F2806x_RAM_BLDC_Sensored.CMD" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F2806x_RAM_BLDC_Sensored.CMD">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/F2806x_RAM_BLDC_Sensored.CMD" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/rts2800_fpu32_fast_supplement.lib" name="rts2800_fpu32_fast_supplement.lib" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/rts2800_fpu32_fast_supplement.lib" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/rts2800_fpu32_fast_supplement.lib">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908./BLDC_Sensored/rts2800_fpu32_fast_supplement.lib" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.464628908"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.616033879./BLDC_Sensored/F2806x_CpuTimers.c" name="F2806x_CpuTimers.c" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F2806x_CpuTimers.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/F2806x_CpuTimers.c">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955./BLDC_Sensored/F2806x_CpuTimers.c" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.2073457955"/>
+</resourceConfiguration>
+</configuration>
+<configuration artifactExtension="out" artifactName="BLDC_Sensored_F2806x" description="" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916" name="F2806x_RAM" parent="com.ti.ccstudio.buildDefinitions.C2000.Debug">
+<toolChain id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.DebugToolchain.214082939" name="TI Code Generation Tools" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.DebugToolchain" targetTool="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658">
+<option id="com.ti.ccstudio.buildDefinitions.core.OPT_TAGS.1856413682" superClass="com.ti.ccstudio.buildDefinitions.core.OPT_TAGS" valueType="stringList">
+<listOptionValue builtIn="false" value="DEVICE_CONFIGURATION_ID=TMS320C28XX.TMS320F28069"/>
+<listOptionValue builtIn="false" value="DEVICE_ENDIANNESS=little"/>
+<listOptionValue builtIn="false" value="OUTPUT_FORMAT=COFF"/>
+<listOptionValue builtIn="false" value="CCS_MBS_VERSION=4.2.0"/>
+<listOptionValue builtIn="false" value="LINKER_COMMAND_FILE="/>
+<listOptionValue builtIn="false" value="RUNTIME_SUPPORT_LIBRARY=rts2800_fpu32.lib"/>
+<listOptionValue builtIn="false" value="IS_ELF=false"/>
+<listOptionValue builtIn="false" value="PROJECT_KIND=com.ti.ccstudio.managedbuild.core.ProjectKind_Executable"/>
+<listOptionValue builtIn="false" value="IS_ASSEMBLY_ONLY=false"/>
+<listOptionValue builtIn="false" value="OUTPUT_TYPE=executable"/>
+<listOptionValue builtIn="false" value="LINK_ORDER=rts2800_fpu32_fast_supplement.lib;-l&quot;rts2800_fpu32.lib&quot;;IQmath_fpu32.lib;"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION.1762821003" superClass="com.ti.ccstudio.buildDefinitions.core.OPT_CODEGEN_VERSION" value="5.2.10" valueType="string"/>
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug">
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.DIAG_WARNING.1768661523" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.DIAG_WARNING" valueType="stringList">
+<listOptionValue builtIn="false" value="225"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.LARGE_MEMORY_MODEL.1312419095" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.LARGE_MEMORY_MODEL" value="true" valueType="boolean"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.UNIFIED_MEMORY.159861860" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.UNIFIED_MEMORY" value="true" valueType="boolean"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.SILICON_VERSION.737734965" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.SILICON_VERSION" value="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.SILICON_VERSION.28" valueType="enumerated"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.FLOAT_SUPPORT.1629644108" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.FLOAT_SUPPORT" value="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.FLOAT_SUPPORT.fpu32" valueType="enumerated"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.CLA_SUPPORT.674392476" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.CLA_SUPPORT" value="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.CLA_SUPPORT.cla0" valueType="enumerated"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.DEFINE.292081496" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.DEFINE" valueType="definedSymbols">
+<listOptionValue builtIn="false" value="&quot;_DEBUG&quot;"/>
+<listOptionValue builtIn="false" value="&quot;LARGE_MODEL&quot;"/>
+<listOptionValue builtIn="false" value="&quot;FLOAT_MATH&quot;"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.INCLUDE_PATH.372083860" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.compilerID.INCLUDE_PATH" valueType="includePath">
+<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}\libs\math\IQmath\v15c\include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}/development_kits/~SupportFiles/F2806x_headers&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}/device_support/f2806x/v100/F2806x_headers/include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}/device_support/f2806x/v100/F2806x_common/include&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CONTROLSUITE_DRV8312_ROOT}\libs\app_libs\motor_control\math_blocks\v3.1&quot;"/>
+</option>
+</tool>
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug">
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.STACK_SIZE.736883514" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.STACK_SIZE" value="0x380" valueType="string"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.OUTPUT_FILE.370128388" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.OUTPUT_FILE" value="&quot;BLDC_Sensored_F2806x.out&quot;" valueType="string"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.MAP_FILE.239436149" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.MAP_FILE" value="&quot;BLDC_Sensored_F2806x.map&quot;" valueType="string"/>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.generatedLinkerCommandFiles.37952399" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.generatedLinkerCommandFiles" valueType="libs">
+<listOptionValue builtIn="false" value="&quot;$(GEN_CMDS_QUOTED)&quot;"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.SEARCH_PATH.601616845" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.SEARCH_PATH" valueType="stringList">
+<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/lib&quot;"/>
+<listOptionValue builtIn="false" value="&quot;${CG_TOOL_ROOT}/include&quot;"/>
+</option>
+<option id="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.LIBRARY.571050558" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.linkerID.LIBRARY" valueType="libs">
+<listOptionValue builtIn="false" value="&quot;rts2800_fpu32.lib&quot;"/>
+</option>
+</tool>
+<macros expandEnvironmentMacros="true"/>
+</toolChain>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/DSP2803x_GlobalVariableDefs.c" name="DSP2803x_GlobalVariableDefs.c" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/DSP2803x_GlobalVariableDefs.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/DSP2803x_GlobalVariableDefs.c">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/DSP2803x_GlobalVariableDefs.c" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/DSP2803x_Headers_nonBIOS.cmd" name="DSP2803x_Headers_nonBIOS.cmd" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/DSP2803x_Headers_nonBIOS.cmd" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/DSP2803x_Headers_nonBIOS.cmd">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/DSP2803x_Headers_nonBIOS.cmd" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/DSP2803x_usDelay.asm" name="DSP2803x_usDelay.asm" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/DSP2803x_usDelay.asm" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/DSP2803x_usDelay.asm">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/DSP2803x_usDelay.asm" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/IQmath.lib" name="IQmath.lib" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/IQmath.lib" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/IQmath.lib">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/IQmath.lib" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/BLDC_Sensored-DevInit_F2803x.c" name="BLDC_Sensored-DevInit_F2803x.c" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/BLDC_Sensored-DevInit_F2803x.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/BLDC_Sensored-DevInit_F2803x.c">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/BLDC_Sensored-DevInit_F2803x.c" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD" name="F28035_FLASH_BLDC_Sensored.CMD" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/F28035_FLASH_BLDC_Sensored.CMD" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/F28035_RAM_BLDC_Sensored.CMD" name="F28035_RAM_BLDC_Sensored.CMD" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F28035_RAM_BLDC_Sensored.CMD" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/F28035_RAM_BLDC_Sensored.CMD">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/F28035_RAM_BLDC_Sensored.CMD" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD" name="F2806x_FLASH_BLDC_Sensored.CMD" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658./BLDC_Sensored/F2806x_FLASH_BLDC_Sensored.CMD" name="C2000 Linker" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.linkerDebug.1281499658"/>
+</resourceConfiguration>
+<resourceConfiguration exclude="true" id="com.ti.ccstudio.buildDefinitions.C2000.Debug.480596916./BLDC_Sensored/DSP2803x_CpuTimers.c" name="DSP2803x_CpuTimers.c" rcbsApplicability="disable" resourcePath="/BLDC_Sensored/DSP2803x_CpuTimers.c" toolsToInvoke="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/DSP2803x_CpuTimers.c">
+<tool id="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084./BLDC_Sensored/DSP2803x_CpuTimers.c" name="C2000 Compiler" superClass="com.ti.ccstudio.buildDefinitions.C2000_5.2.exe.compilerDebug.460074084"/>
+</resourceConfiguration>
+</configuration>
+<macros/>
+</project>
+</ManagedProjectBuildInfo>
