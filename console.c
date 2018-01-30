@@ -388,8 +388,8 @@ void CONSOLE_SerialProcess(unsigned char u8Char)
 void CONSOLE_RegistUserFunction(void)
 {
         CONSOLE_SetUserFunction("?"         , CONSOLE_HelpMsgDisplay    , "HELP"                            , 1);
-        CONSOLE_SetUserFunction("HELP"      , CONSOLE_HelpMsgDisplay    , "도움말 [선택:0..3]"              	, 1);
-        CONSOLE_SetUserFunction("DEBUG"     , CONSOLE_SetDebugMode      , "디버깅모드 [콘솔접근코드]"       		, 1);
+        CONSOLE_SetUserFunction("HELP"      , CONSOLE_HelpMsgDisplay    , "Help [0..3]"              	, 1);
+        CONSOLE_SetUserFunction("DEBUG"     , CONSOLE_SetDebugMode      , "Debug Mode [passcode]"       		, 1);
         CONSOLE_SetUserFunction("VER"       , CONSOLE_VersionDisp       , "Version Display"                 , 1);
         CONSOLE_SplitUserFunction();
         CONSOLE_SetUserFunction("CF"        , CONSOLE_CtrlFlag          , "Ctrl Flag Set"                   , 0x12);
@@ -649,7 +649,7 @@ void CONSOLE_CallUserFunction(unsigned char **ppu8Command, uint16_t u16ArgmentNo
 		   return;
 	   }
    }
-   UART_printf("\n 명령이 올바르지 않습니다.\n");
+   UART_printf("\n Wrong Command.\n");
 }
 
 /******************************************************************************
@@ -856,7 +856,7 @@ void CONSOLE_Prompt(void)
 
  void CONSOLE_DispAccessCodeErrMsg(void)
  {
-	UART_printf("\n [PassCode]가 잘못되었습니다.");
+	UART_printf("\n wrong [PassCode].");
  }
 
 /*****************************************************************************
@@ -1001,7 +1001,7 @@ void CONSOLE_VersionDisp(uint32_t u32Flag)
 	unsigned char i;
 
 	UART_printf("\n==============================================");
-	UART_printf("\n     [ %s ] 버전 정보", BOARD_NAME);
+	UART_printf("\n     [ %s ] Version info", BOARD_NAME);
 	UART_printf("\n==============================================");
 	UART_printf("\n   Board Type : %02d , Motor Type : %02d", gdsSystem.u16BoardType, gdsSystem.u16MotorType );
 	UART_printf("\n   IMD        : F/W Ver. %2d.%02d", BTP_VER0, BTP_VER1 );
@@ -1060,7 +1060,7 @@ void CONSOLE_VersionDisp(uint32_t u32Flag)
 		}
 	}
 
-	UART_printf("\n콘솔 모니터링");
+	UART_printf("\nConsole Monitor");
 
 	if( ghCON.u16ArgmentNo == 2 )
 	{
@@ -1319,7 +1319,7 @@ void CONSOLE_MemFill(uint32_t u32StartAddress, uint32_t u32EndAddress, unsigned 
    if( (CONSOLE_IsWriteMemory(u32Address) == false) ||
 	   (CONSOLE_IsFlashMemory(u32Address) == true ) )
    {
-	   UART_printf("사용 예) MF [StartAddr] [Size] [Val]\n");
+	   UART_printf("Usage Ex) MF [StartAddr] [Size] [Val]\n");
 	   return;
    }
 
@@ -1369,7 +1369,7 @@ void CONSOLE_MemFill(uint32_t u32StartAddress, uint32_t u32EndAddress, unsigned 
 
 	   if(CONSOLE_IsWriteMemory(u32Address+i) == false)
 	   {
-		   UART_printf("사용 예) MF [StartAddr] [EndAddr] [Val]\n");
+		   UART_printf("Usage Ex) MF [StartAddr] [EndAddr] [Val]\n");
 		   ghCON.u32StartAddr = (u32Address + i);
 		   return;
 	   }
@@ -1426,7 +1426,7 @@ unsigned char CONSOLE_MemCheck(uint32_t u32StartAddress, uint32_t u32Length)
    if( (CONSOLE_IsWriteMemory(u32Address) == false) ||
 	   (CONSOLE_IsFlashMemory(u32Address) == true ) )
    {
-	   UART_printf("사용 예) MC [StartAddr] [EndAddr]\n");
+	   UART_printf("Usage Ex) MC [StartAddr] [EndAddr]\n");
 	   return( false );
    }
 
@@ -1438,7 +1438,7 @@ unsigned char CONSOLE_MemCheck(uint32_t u32StartAddress, uint32_t u32Length)
 
 	   if(CONSOLE_IsWriteMemory(u32Address) == false)
 	   {
-		   UART_printf("사용 예) MC [StartAddr] [EndAddr]\n");
+		   UART_printf("Usage Ex) MC [StartAddr] [EndAddr]\n");
 		   return( false );
 	   }
 
@@ -1511,7 +1511,7 @@ void CONSOLE_MemEdit( int32_t u32StartAddress )
    {
 	   if( (CONSOLE_IsWriteMemory(u32Address) == false) )
 	   {
-		   UART_printf("사용 예) ME [EditAddr] => ex) ME 0x80000000\n");
+		   UART_printf("Usage Ex) ME [EditAddr] => ex) ME 0x80000000\n");
 		   return;
 	   }
 
@@ -1570,7 +1570,7 @@ void CONSOLE_MemEdit( int32_t u32StartAddress )
 		default:                              UART_printf("\n USER"       ); break;
 	}
 
-	UART_printf(" 모드로 전환 되었습니다.\n");
+	UART_printf(" Mode changed.\n");
  }
 
 
@@ -1951,6 +1951,7 @@ void CONSOLE_SpeedRef(char* sbuf)
 		//sscanf (sbuf, "%f", &SpeedRef);
 		SpeedRef = atof (sbuf);
 	}
+	gdsGui.fSpdRef = SpeedRef;
 	UART_printf ("\nSpeed Ref      = %f", SpeedRef);
 	UART_printf ("\nSpeed Per Unit = %f", speed1.Speed);
 	SpdRpm = speed1.Speed*speed1.BaseRpm;
@@ -1971,6 +1972,7 @@ void CONSOLE_CurrentRef(char* sbuf)
 		//sscanf (sbuf, "%f", &CurrentSet);
 		CurrentSet = atof (sbuf);
 	}
+	gdsGui.fCrnRef = CurrentSet;
 	UART_printf ("\nCurrent Set   = %f", CurrentSet);
 	UART_printf ("\nDC Current PU = %f", DCbus_current);
 	UART_printf ("\nA  Current PU = %f", current[0]);

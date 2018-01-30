@@ -22,7 +22,7 @@
 // Functions that will be run from RAM need to be assigned to
 // a different section.  This section will then be mapped to a load and
 // run address using the linker cmd file.
-#pragma CODE_SECTION(InitFlash, "ramfuncs");
+//#pragma CODE_SECTION(InitFlash, "ramfuncs");
 #define Device_cal (void   (*)(void))0x3D7C80
 
 void DeviceInit(void);
@@ -654,7 +654,7 @@ void PieCntlInit(void)
 void PieVectTableInit(void)
 {
 	int16 i;
-   	PINT *Dest = &PieVectTable.TINT1;
+   	PINT *Dest = (PINT *)&PieVectTable.TINT1; //hrjung: resolve warning
 
    	EALLOW;
    	for(i=0; i < 115; i++) 
@@ -676,6 +676,7 @@ interrupt void ISR_ILLEGAL(void)   // Illegal operation TRAP
 
 }
 
+#if 0
 // This function initializes the Flash Control registers
 
 //                   CAUTION
@@ -714,7 +715,7 @@ void InitFlash(void)
 
    asm(" RPT #7 || NOP");
 }
-
+#endif
 
 // This function will copy the specified memory contents from
 // one location to another. 

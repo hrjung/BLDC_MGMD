@@ -533,6 +533,11 @@ void Update_Cfg_Gpio()
 
 void Update_Ctrl_parameter ()
 {
+	if(gdsGui.u16Start == 0)
+	{
+		RunBreakFlag = 0;
+	}
+
 }
 
 void Update_Cfg_parameter ()
@@ -751,6 +756,7 @@ void ProcessControl()
 		Direction  = gdsGui.u16Dir;
 		SpeedRef   = gdsGui.fSpdRef;
 		CurrentSet = gdsGui.fCrnRef;
+		RunMotor = RunBreakFlag;
 	} else {
 		EnableFlag = gdsIn.u16Start;
 		Direction  = gdsIn.u16Dir;
