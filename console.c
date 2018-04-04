@@ -1831,7 +1831,7 @@ unsigned char CONSOLE_DataInput(unsigned char *u32Value, uint16_t u16Size)
 extern volatile uint16_t EnableFlag;
 extern uint16_t SensorlessFlag;
 extern uint16_t Direction;
-extern uint16_t ILoopFlag;
+//extern uint16_t ILoopFlag;
 extern SPEED_MEAS_CAP speed1;
 
 void CONSOLE_CtrlFlag (char* sbuf0, char* sbuf1)
@@ -1840,22 +1840,22 @@ void CONSOLE_CtrlFlag (char* sbuf0, char* sbuf1)
 
 		switch(sbuf0[0])
 		{
-		    case 'C':
+		    case 'C': // 1 : PC or console, 0 : external input
 				CtrlSrcFlag = atoi(sbuf1);
 				break;
-			case 'E':
+			case 'E': // enable/disable
 				gdsGui.u16Start = atoi(sbuf1);
 				break;
-			case 'S':
+			case 'S': // sensorless on/off
 				SensorlessFlag = atoi(sbuf1);
 				break;
-			case 'D' :
+			case 'D' : // direction
 				gdsGui.u16Dir = atoi(sbuf1);
 				break;
-			case 'I' :
-				ILoopFlag = atoi(sbuf1);
-				break;
-			case 'R' :
+//			case 'I' :
+//				ILoopFlag = atoi(sbuf1);
+//				break;
+			case 'R' : // run/stop
 				RunBreakFlag = atoi(sbuf1);
 				break;
 		}
@@ -1866,8 +1866,9 @@ void CONSOLE_CtrlFlag (char* sbuf0, char* sbuf1)
 	UART_printf ("\nEnableFlag   = %d", EnableFlag);
 	UART_printf ("\nSensorless   = %d", SensorlessFlag);
 	UART_printf ("\nDirection    = %d", Direction);
-	UART_printf ("\nILoopFlag    = %d", ILoopFlag);
+	//UART_printf ("\nILoopFlag    = %d", ILoopFlag);
 	UART_printf ("\nRunBreakFlag = %d", RunBreakFlag);
+	UART_printf ("\nControlMode  = %d", gu16CtrlMode);
 
 }
 
@@ -1949,13 +1950,15 @@ void CONSOLE_SpeedRef(char* sbuf)
 	_iq SpdRpm;
 	if( ghCON.u16ArgmentNo >= 2 ) {
 		//sscanf (sbuf, "%f", &SpeedRef);
-		SpeedRef = atof (sbuf);
+		//SpeedRef = atof (sbuf);
+		gdsGui.fSpdRef = _IQ(atof(sbuf));
 	}
-	gdsGui.fSpdRef = SpeedRef;
+	//gdsGui.fSpdRef = SpeedRef;
 	UART_printf ("\nSpeed Ref      = %f", SpeedRef);
 	UART_printf ("\nSpeed Per Unit = %f", speed1.Speed);
 	SpdRpm = speed1.Speed*speed1.BaseRpm;
 	UART_printf ("\nSpeed rpm      = %f", SpdRpm);
+	//UART_printf ("\nArgmentNo      = %d", ghCON.u16ArgmentNo);
 
 }
 
@@ -1970,9 +1973,10 @@ void CONSOLE_CurrentRef(char* sbuf)
 	//_iq Current;
 	if( ghCON.u16ArgmentNo >= 2 ) {
 		//sscanf (sbuf, "%f", &CurrentSet);
-		CurrentSet = atof (sbuf);
+		//CurrentSet = atof (sbuf);
+		gdsGui.fCrnRef = _IQ(atof(sbuf));
 	}
-	gdsGui.fCrnRef = CurrentSet;
+	//gdsGui.fCrnRef = CurrentSet;
 	UART_printf ("\nCurrent Set   = %f", CurrentSet);
 	UART_printf ("\nDC Current PU = %f", DCbus_current);
 	UART_printf ("\nA  Current PU = %f", current[0]);
@@ -2299,11 +2303,12 @@ void CONSOLE_FactoryValue( )
 {
     gdsSystem.u16BoardType = BOARD_TYPE;
     gdsSystem.u16MotorType = MOTOR_TYPE;
-    gu16CtrlMode		  = C_CASCADE;
-	gu16Pole              = (gdsSystem.u16MotorType==M_W78)?POLES_W78:POLES_W750;
-	gfBaseFreq            = (gdsSystem.u16MotorType==M_W78)?BASE_FREQ_W78:BASE_FREQ_W750;
-	giqBaseCurrent        = (gdsSystem.u16MotorType==M_W78)?BASE_CURRENT_W78:BASE_CURRENT_W750;
-	pid1_spd.param.Kp     = _IQ(0.75);
+    //gu16CtrlMode		  = C_CASCADE;
+    gu16CtrlMode		  = C_SPEED;
+	gu16Pole              = POLES;
+	gfBaseFreq            = BASE_FREQ;
+	giqBaseCurrent        = BASE_CURRENT;
+	pid1_spd.param.Kp     = _IQ(0.5); //_IQ(0.75);
 	pid1_spd.param.Ki     = _IQ(T/0.3);
     //pid1_idc.param.Kp     = _IQ(3.176*giqBaseCurrent/BASE_VOLTAGE);	// BLDC-Sensored
 	//pid1_idc.param.Ki     = _IQ(T/0.0005);							// BLDC-Sensored
@@ -2336,6 +2341,7 @@ void CONSOLE_LoadCfg(uint32_t u32Dflt )
 		gu16DecTime           = gdsIMDCfgPcIfc.u16DecTime;
 		gu16Pole              = gdsIMDCfgPcIfc.u16Pole;
 		gu16CtrlMode          = gdsIMDCfgPcIfc.u16CtrlMode;
+		//gu16CtrlMode          = C_SPEED;
 		gfBaseFreq            = gdsIMDCfgPcIfc.f16BaseFreq;
 		giqBaseCurrent        = gdsIMDCfgPcIfc.f16BaseCurrent;
 

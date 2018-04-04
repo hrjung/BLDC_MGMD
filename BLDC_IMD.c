@@ -95,13 +95,13 @@ int16	SerialCommsTimer;
 
 // Global variables used in this system
 
-
+// T= 0.000025 : 25us
 float32 T = 0.001/ISR_FREQUENCY;    // Samping period (sec), see parameter.h 
 
 Uint32 IsrTicker = 0;
 Uint16 BackTicker = 0;
 
-volatile Uint16 CtrlSrcFlag = 0;
+volatile Uint16 CtrlSrcFlag = 1;
 Uint16 CALIBRATE_FLAG = 1;
 Uint16 CALIBRATE_TIME = 0x07FF;		//give the calibration filters about 100ms (~10tc) to settle
 
@@ -113,15 +113,18 @@ Uint16 SinusoidalFlag = 0;
 
 
 Uint32 VirtualTimer = 0;
-Uint16 ILoopFlag = false;
+//Uint16 ILoopFlag = false;
 Uint16 SpeedLoopFlag = false;
-int16  DFuncDesired = (int16)_IQtoQ15(_IQ(0.1));
-int16  DfuncTesting = (int16)_IQtoQ15(_IQ(0.12));
+int16  DFuncDesired = (int16)_IQtoQ15(_IQ(0.15));
+int16  DfuncTesting = (int16)_IQtoQ15(_IQ(0.1)); // 0.12
 
 Uint16 AlignFlag = 0x000F;
 Uint16 LoopCount = 0;
 
-#if (BUILDLEVEL<= LEVEL2)
+Uint16 SpeedLoopLog_flag = 0;
+Uint16 ClosedLog_flag = 0;
+
+#if 0 //(BUILDLEVEL<= LEVEL2)
 Uint32 CmtnPeriodTarget = 168;
 Uint32 CmtnPeriodSetpt = 1024;
 Uint32 RampDelay = 10;
@@ -130,12 +133,12 @@ Uint32 RampDelay = 10;
 int32 RAMP_START_RATE;
 int32 RAMP_END_RATE;
 #else
-#define BEGIN_START_RPM		50
-#define END_START_RPM       100
+#define BEGIN_START_RPM		20
+#define END_START_RPM       50
 int32 RAMP_START_RATE;
 int32 RAMP_END_RATE;
-Uint32 CmtnPeriodTarget = 0x00000350;
-Uint32 CmtnPeriodSetpt = 0x00000500;
+Uint32 CmtnPeriodTarget = 0x00000350; //848
+Uint32 CmtnPeriodSetpt = 0x00000500;  //1280
 Uint32 RampDelay = 10;
 #endif
 
@@ -149,7 +152,7 @@ _iq DCcurrent_Fbk = 0;
 Uint16 DCcurrent_Cnt = 0;
 Uint16 DCcurrent_SumCnt = 0;
 #endif
-_iq SpeedRef=_IQ(0.7);		// 0.3 * 4980	= 1494 rpm (25회/초)
+_iq SpeedRef=_IQ(0.1);		// 0.3 * 4980	= 1494 rpm (25회/초)
 _iq tempIdc = 0;
 
 // Lopass Filter
@@ -163,10 +166,11 @@ dsIMDCtrlIfc gdsIn;
 dsIMDCtrlIfc gdsGui;
 dsInBuf gdsInBUf;
 
-Uint16 gu16AccTime  = 1000;
-Uint16 gu16DecTime  = 1000;
+Uint16 gu16AccTime  = 5000;
+Uint16 gu16DecTime  = 5000;
 Uint16 gu16Pole     = POLES;
-Uint16 gu16CtrlMode = C_CASCADE;
+//Uint16 gu16CtrlMode = C_CASCADE;
+Uint16 gu16CtrlMode = C_SPEED;
 float  gfBaseFreq   = BASE_FREQ;
 _iq giqBaseCurrent   = BASE_CURRENT;
 _iq giqCurrentScaler = CURRENT_SCALER;
@@ -188,7 +192,7 @@ int16 DlogCh4 = 0;
 
 
 volatile Uint16 EnableFlag = false;
-volatile Uint16 RunBreakFlag = true;
+volatile Uint16 RunBreakFlag = false;
 volatile Uint16 FailFlag = false;
 
 Uint16 RunMotor = false;
@@ -579,9 +583,10 @@ void Initialize()
 	*/
 
 	// Gui 제어 기본값
-	gdsGui.fSpdRef = 0.7;
+	gdsGui.fSpdRef = 0.1;
 	gdsGui.fCrnRef = 0.04;
 	gdsGui.u16Dir = 1;
+	gdsGui.u16Start = 0;
 
 	// 플래시에서 설정값을 로드 한다.
 	ghCON.u16ArgmentNo = 2;
@@ -745,7 +750,7 @@ void ProcessDigitalInput()
 void ProcessInput()
 {
 	ProcessAnalogInput();
-	ProcessDigitalInput();
+	//hrjung temp ProcessDigitalInput();
 }
 
 // 제어단자에 대한 처리
@@ -754,15 +759,20 @@ void ProcessControl()
 	if ( CtrlSrcFlag == 1 ) {
 		EnableFlag = gdsGui.u16Start;
 		Direction  = gdsGui.u16Dir;
-		SpeedRef   = gdsGui.fSpdRef;
-		CurrentSet = gdsGui.fCrnRef;
+		SpeedRef   = _IQ(gdsGui.fSpdRef);
+		CurrentSet = _IQ(gdsGui.fCrnRef);
 		RunMotor = RunBreakFlag;
 	} else {
 		EnableFlag = gdsIn.u16Start;
 		Direction  = gdsIn.u16Dir;
-		SpeedRef   = gdsIn.fSpdRef;
+		SpeedRef   = _IQ(gdsIn.fSpdRef);
 	}
 
+	if(EnableFlag == 0)
+	{
+		SpeedLoopLog_flag = 0;
+		ClosedLog_flag = 0;
+	}
 }
 
 
@@ -923,7 +933,7 @@ void main(void)
 // Initialize RMPCNTL module
     //rc1.RampDelayMax = 25;
 	#ifndef DRV8301HC
-    rc1.RampDelayMax = 2;
+    rc1.RampDelayMax = 20; //2;
 	#else
     rc1.RampDelayMax = 2;
 	#endif
@@ -936,17 +946,24 @@ void main(void)
     rmp2.Ramp2Max = 0x7FFF;
     rmp2.Ramp2Min = 0x000F;
 
+#if 0 // (BUILDLEVEL<= LEVEL2)
+	rmp3.DesiredInput = CmtnPeriodTarget;
+	rmp3.Ramp3Delay = RampDelay;
+    rmp3.Out = CmtnPeriodSetpt;
+    rmp3.Ramp3Min = 0x00000010;
+#else
 	RAMP_START_RATE = (PWM_FREQUENCY*1000)*60.0/BEGIN_START_RPM/COMMUTATES_PER_E_REV/(gu16Pole/2.0);
 	RAMP_END_RATE = (PWM_FREQUENCY*1000)*60.0/END_START_RPM/COMMUTATES_PER_E_REV/(gu16Pole/2.0);
-	CmtnPeriodTarget = RAMP_END_RATE;
-	CmtnPeriodSetpt = RAMP_START_RATE;
+	CmtnPeriodTarget = RAMP_END_RATE; //1000
+	CmtnPeriodSetpt = RAMP_START_RATE; //2000
 
 	// Initialize RMP3 module
 	rmp3.DesiredInput = CmtnPeriodTarget;
-	//rmp3.Ramp3Delay = RampDelay;
-	rmp3.Ramp3Delay = (Uint32)(((float32)gu16AccTime * 0.001)/((float32)(CmtnPeriodSetpt - CmtnPeriodTarget) * T));
+	rmp3.Ramp3Delay = RampDelay;
+	//hrjung rmp3.Ramp3Delay = (Uint32)(((float32)gu16AccTime * 0.001)/((float32)(CmtnPeriodSetpt - CmtnPeriodTarget) * T));
 	rmp3.Out = CmtnPeriodSetpt;
     rmp3.Ramp3Min = 0x00000010;
+#endif
 
     // Initialize CMTN module (Commutation Trigger Module)
    	cmtn1.NWDelayThres = 20;
@@ -1198,7 +1215,8 @@ void A1(void) // SPARE (not used)
 				DRV8301_stat_reg1.all = DRV830X_SPI_Write(&SpiaRegs,IC_OPERATION_ADDR,DRV8305_ic_oper_reg.all);
 			}
 			#endif	// DRV830X
-		}
+		} // DRV_RESET == 0
+
 		hall1.CmtnTrigHall = 0;
     	hall1.CapCounter = 0;
     	hall1.DebounceCount = 0;
@@ -1238,8 +1256,10 @@ void A1(void) // SPARE (not used)
 		rmp2.Out = ALIGN_DUTY;
 		
 		if (!SensorlessFlag) {
-			CmtnPeriodTarget = 0x00000350;
-			CmtnPeriodSetpt = 0x00000500;
+//			CmtnPeriodTarget = 0x00000350;
+//			CmtnPeriodSetpt = 0x00000500;
+			CmtnPeriodTarget = RAMP_END_RATE;
+			CmtnPeriodSetpt = RAMP_START_RATE;
 		} else {
 			CmtnPeriodTarget = 168;
 			CmtnPeriodSetpt = 1024;
@@ -1277,7 +1297,7 @@ void A1(void) // SPARE (not used)
    		cmtn1.ZcTrig = 0;
 
    		ClosedFlag = false;
-		ILoopFlag = false;
+		//ILoopFlag = false;
 		SpeedLoopFlag = false;
 		AlignFlag = 0x000F;
 		LoopCount = 0;
@@ -1494,8 +1514,9 @@ if(RunMotor)
  		   		GpioDataRegs.GPBDAT.bit.GPIO43 = 0;
  		   	}
  		}
-	} else {
+	} else { // !CALIBRATE_FLAG
 
+#ifdef BLDC_SENSORLESS
 		// Initial Rotor Alignment Process
 		if ((AlignFlag != 0) && (SensorlessFlag))
 		{
@@ -1525,7 +1546,409 @@ if(RunMotor)
 		  }
 		}
 	   else
+#endif
 		{
+
+	// =============================== LEVEL 6 ======================================
+	//	  Level 6 verifies the closed speed loop and speed PI controller.
+	// ==============================================================================
+
+	#if (BUILDLEVEL==LEVEL7)
+
+			// ------------------------------------------------------------------------------
+			//    ADC conversion and offset adjustment (observing back-emfs is optional for this prj.)
+			// ------------------------------------------------------------------------------
+				#ifdef F2806x_DEVICE_H
+		      if (gdsSystem.u16BoardType == B_IMMB) {
+					  BemfA =  ((AdcResult.ADCRESULT4)*0.00024414)-BemfA_offset;
+					  BemfB =  ((AdcResult.ADCRESULT5)*0.00024414)-BemfB_offset;
+					  BemfC =  ((AdcResult.ADCRESULT6)*0.00024414)-BemfC_offset;
+					  current[0] = - ((AdcResult.ADCRESULT0)*0.00024414-IA_offset)*giqCurrentScaler;
+					  current[1] = - ((AdcResult.ADCRESULT1)*0.00024414-IB_offset)*giqCurrentScaler;
+					  current[2] = - ((AdcResult.ADCRESULT2)*0.00024414-IC_offset)*giqCurrentScaler;
+					  // Lowpass Filter 필터 (IIR필터, 40K샘플링 / 3K cut-frequency )
+					  iqX[1] = iqX[0];
+					  iqY[1] = iqY[0];
+					  iqX[0] = - ((AdcResult.ADCRESULT3)*0.00024414-IDC_offset)*giqCurrentScaler;
+					  iqY[0] = (iqB[0]*iqX[0] + iqB[1]*iqX[1] - iqA[1]*iqY[1]) * iqG;
+					  DCbus_current = iqY[0];
+			    } else if (gdsSystem.u16BoardType == B_DRV8301HC) {
+					  BemfA =  ((AdcResult.ADCRESULT4)*0.00024414)-BemfA_offset;
+					  BemfB =  ((AdcResult.ADCRESULT5)*0.00024414)-BemfB_offset;
+					  BemfC =  ((AdcResult.ADCRESULT6)*0.00024414)-BemfC_offset;
+					  current[0] = - ((AdcResult.ADCRESULT0)*0.00024414-IA_offset)*giqCurrentScaler;
+					  current[1] = - ((AdcResult.ADCRESULT1)*0.00024414-IB_offset)*giqCurrentScaler;
+					  // Lopass Filter 필터 (IIR필터, 40K샘플링 / 3K cut-frequency )
+					  iqX[1] = iqX[0];
+					  iqY[1] = iqY[0];
+					  iqX[0] = - ((AdcResult.ADCRESULT2)*0.00024414-IDC_offset)*giqCurrentScaler;
+					  iqY[0] = (iqB[0]*iqX[0] + iqB[1]*iqX[1] - iqA[1]*iqY[1]) * iqG;
+					  DCbus_current = iqY[0];
+		 	    } else {
+					  BemfA =  ((AdcResult.ADCRESULT4)*0.00024414)-BemfA_offset;
+					  BemfB =  ((AdcResult.ADCRESULT5)*0.00024414)-BemfB_offset;
+					  BemfC =  ((AdcResult.ADCRESULT6)*0.00024414)-BemfC_offset;
+					  current[0] = -((AdcResult.ADCRESULT0)*0.00024414-IA_offset)*giqCurrentScaler;
+					  current[1] = -((AdcResult.ADCRESULT1)*0.00024414-IB_offset)*giqCurrentScaler;
+					  current[2] = -((AdcResult.ADCRESULT2)*0.00024414-IC_offset)*giqCurrentScaler;
+					  // Lopass Filter 필터 (IIR필터, 40K샘플링 / 3K cut-frequency )
+					  iqX[1] = iqX[0];
+					  iqY[1] = iqY[0];
+					  iqX[0] = current[0] + current[1] + current[2];
+					  iqY[0] = (iqB[0]*iqX[0] + iqB[1]*iqX[1] - iqA[1]*iqY[1]) * iqG;
+					  DCbus_current = iqY[0];
+				 }
+
+				#if (CURRENT_AVG)
+				 DCcurrent_Sum += DCbus_current;
+				 ++DCcurrent_Cnt;
+				#endif
+				#endif
+
+				#ifdef DSP2803x_DEVICE_H
+				 BemfA =  _IQ15toIQ((AdcResult.ADCRESULT4<<3)-BemfA_offset);
+				 BemfB =  _IQ15toIQ((AdcResult.ADCRESULT5<<3)-BemfB_offset);
+				 BemfC =  _IQ15toIQ((AdcResult.ADCRESULT6<<3)-BemfC_offset);
+				  // IIR 필터
+				 iqX[1] = iqX[0];
+				 iqX[0] = current[0] + current[1] + current[2];
+				 iqY[1] = iqY[0];
+				 iqY[0] = _IQmpy(iqB[0], iqX[0]) + _IQmpy(iqB[1],iqX[1]) - _IQmpy(iqA[1],iqY[1]);
+				#endif
+
+			// ------------------------------------------------------------------------------
+			//   Connect inputs of the RMP module and call the Ramp control macro.
+			// ------------------------------------------------------------------------------
+				 if (SpeedLoopFlag) {
+					  rc1.TargetValue = SpeedRef;
+				 } else {
+					  rc1.TargetValue = 0.3;
+					  //rc1.RampDelayMax = 1;
+				 }
+				 RC_MACRO(rc1)
+
+			// ------------------------------------------------------------------------------
+			//   Connect inputs of the RMP3 module and call the Ramp control 3 macro.
+			// ------------------------------------------------------------------------------
+				 rmp3.DesiredInput = CmtnPeriodTarget;
+				 rmp3.Ramp3Delay = RampDelay;
+				 RC3_MACRO(rmp3)
+
+			// ------------------------------------------------------------------------------
+			//   Connect inputs of the IMPULSE module and call the Impulse macro.
+			// ------------------------------------------------------------------------------
+				  impl1.Period = rmp3.Out;
+				  IMPULSE_MACRO(impl1)
+
+				 if (!SensorlessFlag) {
+				// ------------------------------------------------------------------------------
+				//    Connect inputs of the HALL module and call the Hall sensor read macro.
+				// ------------------------------------------------------------------------------
+					  hall1.HallMapPointer = (int16)mod1.Counter;
+					  HALL3_READ_MACRO(hall1)	// 내부에 하드웨어에 따라 다른 설정 옵션 있음
+
+					  if (hall1.Revolutions>=0)
+					  {
+						 ClosedFlag=true;
+						  if(ClosedLog_flag==0)
+						  {
+							  ClosedLog_flag = 1;
+							  UART_printf("\n ClosedLog_flag set!");
+						  }
+					  }
+
+					// ------------------------------------------------------------------------------
+					//    Connect inputs of the MOD6 module and call the Modulo 6 counter macro.
+					// ------------------------------------------------------------------------------
+					  if (ClosedFlag==false) {
+						  mod1.TrigInput = impl1.Out;
+						  mod1.Counter = (int32)hall1.HallMapPointer;
+					  } else {
+						  mod1.TrigInput = (int32)hall1.CmtnTrigHall;
+					  }
+
+				 }
+#ifdef BLDC_SENSORLESS
+				 else {	// Sensorless
+
+					// test
+					hall1.HallMapPointer = (int16)mod1.Counter;
+					HALL3_READ_MACRO(hall1)
+
+				   // ------------------------------------------------------------------------------
+				   //    Connect inputs of the MOD6 module and call the Modulo 6 counter macro.
+				   // ------------------------------------------------------------------------------
+					 // Switch from open-loop to closed-loop operation by Ramp3DoneFlag variable
+					  if (rmp3.Ramp3DoneFlag == false) {
+						 mod1.TrigInput = impl1.Out;        // open-loop operation
+					  } else {
+						 mod1.TrigInput = cmtn1.CmtnTrig;   // closed-loop operation
+					  }
+				 }
+#endif
+
+				 if (Direction == 1) {
+					  MOD6CNT_MACRO(mod1)
+				 } else {
+					  MOD6CNT_RVS_MACRO(mod1)
+				 }
+
+			// ------------------------------------------------------------------------------
+			//    Connect inputs of the RMP2 module and call the Ramp control 2 macro.
+			// ------------------------------------------------------------------------------
+				 rmp2.DesiredInput = DFuncDesired;
+				 RC2_MACRO(rmp2)
+
+		    // ------------------------------------------------------------------------------
+		    //   Connect inputs of the PID_REG3 module and call the PID speed controller
+		    //	 macro.
+		    // ------------------------------------------------------------------------------
+				 if ((gu16CtrlMode == C_CASCADE)||(gu16CtrlMode == C_SPEED)) {
+					  pid1_spd.term.Ref = rc1.SetpointValue;
+					  pid1_spd.term.Fbk = speed1.Speed;
+					  PID_GR_MACRO(pid1_spd)
+				 }
+
+			  // ------------------------------------------------------------------------------
+			  //    Connect inputs of the PID_REG3 module and call the PID current controller
+			  //	  macro.
+			  // ------------------------------------------------------------------------------
+			  // Switch from fixed duty-cycle or controlled Speed duty-cycle by SpeedLoopFlag variable
+			  if ((gu16CtrlMode == C_CASCADE)||(gu16CtrlMode == C_CURRENT)) {
+				 if(SpeedLoopFlag == FALSE) {
+					pid1_idc.term.Ref = CurrentStartup;
+				 } else {
+					  if (gu16CtrlMode==C_CASCADE) {
+						  pid1_idc.term.Ref = pid1_spd.term.Out;
+					  } else {
+						  pid1_idc.term.Ref = CurrentSet;
+					  }
+				 }
+				 //pid1_idc.term.Fbk = DCbus_current;
+				#if (CURRENT_AVG)
+				 pid1_idc.term.Fbk = DCcurrent_Fbk;
+				#else
+				 pid1_idc.term.Fbk = DCbus_current;
+				#endif
+
+				 PID_GR_MACRO(pid1_idc)
+			  }
+
+			// ------------------------------------------------------------------------------
+			//    Set the speed closed loop flag once the speed is built up to a desired value.
+			// ------------------------------------------------------------------------------
+				 if ( rc1.EqualFlag == 0x7FFFFFFF ) {
+					  SpeedLoopFlag = true;
+					  if(SpeedLoopLog_flag==0)
+					  {
+						  SpeedLoopLog_flag = 1;
+						  UART_printf("\n SpeedLoopLog_flag set, rc2=%d, rc1=%d fb=%d", rmp2.Out, (int16)_IQtoQ15(pid1_spd.term.Out), (int16)_IQtoQ15(speed1.Speed) );
+					  }
+				 }
+
+			// ------------------------------------------------------------------------------
+			//    Connect inputs of the PWM_DRV module and call the PWM signal generation
+			//    update macro.
+			// ------------------------------------------------------------------------------
+			// Switch from fixed duty-cycle or controlled Speed duty-cycle by SpeedLoopFlag variable
+				 if (SpeedLoopFlag == false){
+					  pwm1.DutyFunc = rmp2.Out;                 // fixed duty-cycle
+					  pid1_spd.data.ui=0;
+					  pid1_spd.data.i1=0;
+					  pid1_idc.data.ui=0;
+					  pid1_idc.data.i1=0;
+				 } else {
+					  if ( gu16CtrlMode == C_SPEED ) {
+					      pwm1.DutyFunc = (int16)_IQtoQ15(pid1_spd.term.Out);   // controlled Speed duty-cycle
+					  } else if ((gu16CtrlMode == C_CASCADE)||(gu16CtrlMode == C_CURRENT))  {
+						  pwm1.DutyFunc = (int16)_IQtoQ15(pid1_idc.term.Out);
+					  }
+				 }
+
+				 if (!SensorlessFlag ) {
+					  if (ClosedFlag==true) {
+						  if (hall1.CmtnTrigHall==0x7FFF) {
+
+							PreviousState = pwm1.CmtnPointer;
+							  // Comment the following if-else-if statements in case of
+							  // inverted Hall logics for commutation states.
+							if (gdsSystem.u16MotorType == M_W750SM) {
+
+							  if (hall1.HallGpioAccepted==5) //2 -> 5
+								pwm1.CmtnPointer = 0;
+
+							  else if (hall1.HallGpioAccepted==1) // 6 -> 1
+								pwm1.CmtnPointer = 1;
+
+							  else if (hall1.HallGpioAccepted==3) // 4 -> 3
+								pwm1.CmtnPointer = 2;
+
+							  else if (hall1.HallGpioAccepted==2) // 5 -> 2
+								pwm1.CmtnPointer = 3;
+
+							  else if (hall1.HallGpioAccepted==6) // 1 -> 6
+								pwm1.CmtnPointer = 4;
+
+							  else if (hall1.HallGpioAccepted==4) // 3 -> 4
+								pwm1.CmtnPointer = 5;
+							}
+							else if (gdsSystem.u16MotorType == M_W78) {
+							  if (hall1.HallGpioAccepted==5)
+								pwm1.CmtnPointer = 0;
+
+							  else if (hall1.HallGpioAccepted==1)
+								pwm1.CmtnPointer = 1;
+
+							  else if (hall1.HallGpioAccepted==3)
+								pwm1.CmtnPointer = 2;
+
+							  else if (hall1.HallGpioAccepted==2)
+								pwm1.CmtnPointer = 3;
+
+							  else if (hall1.HallGpioAccepted==6)
+								pwm1.CmtnPointer = 4;
+
+							  else if (hall1.HallGpioAccepted==4)
+								pwm1.CmtnPointer = 5;
+							} else if (gdsSystem.u16MotorType == M_W750) {
+
+							  if (hall1.HallGpioAccepted==2)
+								pwm1.CmtnPointer = 0;
+
+							  else if (hall1.HallGpioAccepted==6)
+								pwm1.CmtnPointer = 1;
+
+							  else if (hall1.HallGpioAccepted==4)
+								pwm1.CmtnPointer = 2;
+
+							  else if (hall1.HallGpioAccepted==5)
+								pwm1.CmtnPointer = 3;
+
+							  else if (hall1.HallGpioAccepted==1)
+								pwm1.CmtnPointer = 4;
+
+							  else if (hall1.HallGpioAccepted==3)
+								pwm1.CmtnPointer = 5;
+						    }
+
+							  /*
+
+							  // Comment the following if-else-if statements in case of
+							  // non-inverted Hall logics for commutation states.
+							  if (hall1.HallGpioAccepted==2)
+								pwm1.CmtnPointer = 0;
+
+							  else if (hall1.HallGpioAccepted==6)
+								pwm1.CmtnPointer = 1;
+
+							  else if (hall1.HallGpioAccepted==4)
+								pwm1.CmtnPointer = 2;
+
+							  else if (hall1.HallGpioAccepted==5)
+								pwm1.CmtnPointer = 3;
+
+							  else if (hall1.HallGpioAccepted==1)
+								pwm1.CmtnPointer = 4;
+
+							  else if (hall1.HallGpioAccepted==3)
+								pwm1.CmtnPointer = 5;
+							  */
+
+						  }    // Hall1.CmtnTrigHall == 0x7FFF
+					  } else {  // ClosedFlag!=true
+						  pwm1.CmtnPointer = (int16)mod1.Counter;
+					  }
+				 } else {
+					  pwm1.CmtnPointer = (int16)mod1.Counter;
+
+				 }
+
+				 if (Direction == 1) {
+					  BLDCPWM_MACRO(pwm1);
+				 } else {
+					  BLDCPWM_RVS_MACRO(pwm1);
+				 }
+
+			// ------------------------------------------------------------------------------
+			//    Connect inputs of the SPEED_PR module and call the speed calculation macro.
+			// ------------------------------------------------------------------------------
+				 if (!SensorlessFlag ) {	// Sensored
+					 if (Direction == 1) {
+						 if ((pwm1.CmtnPointer==5)&&(PreviousState==4)&&(hall1.CmtnTrigHall==0x7FFF))
+						 {
+							 speed1.TimeStamp = VirtualTimer;
+							 SPEED_PR_MACRO(speed1)
+						 }
+						#if (CURRENT_AVG)
+						 if (DCcurrent_SumCnt == 10) {
+							 DCcurrent_Fbk = DCcurrent_Sum / DCcurrent_Cnt;
+							 DCcurrent_Sum = 0;
+							 DCcurrent_Cnt = 0;
+							 DCcurrent_SumCnt = 0;
+						 } else {
+							 ++DCcurrent_SumCnt;
+						 }
+						#endif
+					 } else {
+						 if ((pwm1.CmtnPointer==4)&&(PreviousState==5)&&(hall1.CmtnTrigHall==0x7FFF)) {
+							 speed1.TimeStamp = VirtualTimer;
+							 SPEED_PR_MACRO(speed1)
+						 }
+						#if (CURRENT_AVG)
+						 if (DCcurrent_SumCnt == 10) {
+							 DCcurrent_Fbk = DCcurrent_Sum / DCcurrent_Cnt;
+							 DCcurrent_Sum = 0;
+							 DCcurrent_Cnt = 0;
+							 DCcurrent_SumCnt = 0;
+						 } else {
+							 ++DCcurrent_SumCnt;
+						 }
+						#endif
+					 }
+				 }
+#ifdef BLDC_SENSORLESS
+				 else {	// Sensorless
+					if ((gdsSystem.u16BoardType != B_DRV8301HC) && (gdsSystem.u16BoardType != B_IMMB)){
+						  cmtn1.Va = BemfA;
+						  cmtn1.Vb = BemfB;
+						  cmtn1.Vc = BemfC;
+					} else {
+						  cmtn1.Va = BemfA * 3;
+						  cmtn1.Vb = BemfB * 3;
+						  cmtn1.Vc = BemfC * 3;
+					}
+
+					cmtn1.CmtnPointer = mod1.Counter;
+					cmtn1.VirtualTimer = VirtualTimer;
+					CMTN_TRIG_MACRO(cmtn1)
+
+					speed1.EventPeriod = cmtn1.RevPeriod;
+					SPEED_PR_MACRO(speed1)
+
+				 }
+#endif
+			// ------------------------------------------------------------------------------
+			//    Connect inputs of the PWMDAC module
+			// ------------------------------------------------------------------------------
+				 PwmDacCh1 = (int16)(mod1.Counter * 4096.0L);
+				 PwmDacCh2 = _IQtoQ15(BemfA);
+				 PwmDacCh3 = _IQtoQ15(BemfB);
+			//      PwmDacCh3 = _IQtoQ15(BemfC);
+
+			// ------------------------------------------------------------------------------
+			//    Connect inputs of the DATALOG module
+			// ------------------------------------------------------------------------------
+
+				 DlogCh1 = mod1.Counter; //pwm1.CmtnPointer;
+				 DlogCh2 = _IQtoQ15(DCbus_current/5.);
+			     //DlogCh2 = hall1.HallGpioAccepted;
+				 //DlogCh3 = _IQtoQ15(BemfA);
+				 DlogCh3 = _IQtoQ15(current[0]/5.);
+				 DlogCh4 = _IQtoQ15(BemfA);
+
+
+	#endif
+
 	// =============================== LEVEL 1 ======================================
 	//	This Level describes the steps for a minimum system check-out which confirms
 	//	operation of system interrupts, some peripheral & target independent modules
@@ -1561,8 +1984,53 @@ if(RunMotor)
 		  pwm1.DutyFunc = DfuncTesting;
 		  BLDCPWM_MACRO(pwm1)
 
-
 	#endif // (BUILDLEVEL==LEVEL1)
+
+	// ------------------------------------------------------------------------------
+	//    Call the PWMDAC update macro.
+	// ------------------------------------------------------------------------------
+		if (gdsSystem.u16BoardType != B_IMMB){
+			PWMDAC_MACRO(pwmdac1)
+		}
+
+	// ------------------------------------------------------------------------------
+	//    Call the DATALOG update function.
+	// ------------------------------------------------------------------------------
+		dlog.update(&dlog);
+
+	// ------------------------------------------------------------------------------
+	//    Increase virtual timer and force 15 bit wrap around
+	// ------------------------------------------------------------------------------
+		VirtualTimer++;
+		VirtualTimer &= 0x00007FFF;
+		}//end else
+	} // CALIBRATION
+	} // end if(RunMotor)
+
+
+#if (DSP2803x_DEVICE_H==1)||(F2806x_DEVICE_H==1)
+/* Enable more interrupts from this timer
+	EPwm1Regs.ETCLR.bit.INT = 1;
+
+// Acknowledge interrupt to recieve more interrupts from PIE group 3
+	PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
+*/
+
+// Acknowledge interrupt to recieve more interrupts from PIE group 1
+	PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
+
+#endif
+
+#if (DSP280x_DEVICE_H==1)
+// Enable more interrupts from this timer
+	EPwm1Regs.ETCLR.bit.INT = 1;
+
+// Acknowledge interrupt to recieve more interrupts from PIE group 3
+	PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
+#endif
+
+
+
 
 	// =============================== LEVEL 2 ======================================
 	//	  Level 2 verifies the analog-to-digital conversion, offset compensation,
@@ -2396,414 +2864,6 @@ if(RunMotor)
 
 
 	#endif // (BUILDLEVEL==LEVEL6)
-
-	// =============================== LEVEL 6 ======================================
-	//	  Level 6 verifies the closed speed loop and speed PI controller.
-	// ==============================================================================
-
-	#if (BUILDLEVEL==LEVEL7)
-
-			// ------------------------------------------------------------------------------
-			//    ADC conversion and offset adjustment (observing back-emfs is optinal for this prj.)
-			// ------------------------------------------------------------------------------
-				#ifdef F2806x_DEVICE_H
-		      if (gdsSystem.u16BoardType == B_IMMB) {
-					  BemfA =  ((AdcResult.ADCRESULT4)*0.00024414)-BemfA_offset;
-					  BemfB =  ((AdcResult.ADCRESULT5)*0.00024414)-BemfB_offset;
-					  BemfC =  ((AdcResult.ADCRESULT6)*0.00024414)-BemfC_offset;
-					  current[0] = - ((AdcResult.ADCRESULT0)*0.00024414-IA_offset)*giqCurrentScaler;
-					  current[1] = - ((AdcResult.ADCRESULT1)*0.00024414-IB_offset)*giqCurrentScaler;
-					  current[2] = - ((AdcResult.ADCRESULT2)*0.00024414-IC_offset)*giqCurrentScaler;
-					  // Lopass Filter 필터 (IIR필터, 40K샘플링 / 3K cut-frequency )
-					  iqX[1] = iqX[0];
-					  iqY[1] = iqY[0];
-					  iqX[0] = - ((AdcResult.ADCRESULT3)*0.00024414-IDC_offset)*giqCurrentScaler;
-					  iqY[0] = (iqB[0]*iqX[0] + iqB[1]*iqX[1] - iqA[1]*iqY[1]) * iqG;
-					  DCbus_current = iqY[0];
-			    } else if (gdsSystem.u16BoardType == B_DRV8301HC) {
-					  BemfA =  ((AdcResult.ADCRESULT4)*0.00024414)-BemfA_offset;
-					  BemfB =  ((AdcResult.ADCRESULT5)*0.00024414)-BemfB_offset;
-					  BemfC =  ((AdcResult.ADCRESULT6)*0.00024414)-BemfC_offset;
-					  current[0] = - ((AdcResult.ADCRESULT0)*0.00024414-IA_offset)*giqCurrentScaler;
-					  current[1] = - ((AdcResult.ADCRESULT1)*0.00024414-IB_offset)*giqCurrentScaler;
-					  // Lopass Filter 필터 (IIR필터, 40K샘플링 / 3K cut-frequency )
-					  iqX[1] = iqX[0];
-					  iqY[1] = iqY[0];
-					  iqX[0] = - ((AdcResult.ADCRESULT2)*0.00024414-IDC_offset)*giqCurrentScaler;
-					  iqY[0] = (iqB[0]*iqX[0] + iqB[1]*iqX[1] - iqA[1]*iqY[1]) * iqG;
-					  DCbus_current = iqY[0];
-		 	    } else {
-					  BemfA =  ((AdcResult.ADCRESULT4)*0.00024414)-BemfA_offset;
-					  BemfB =  ((AdcResult.ADCRESULT5)*0.00024414)-BemfB_offset;
-					  BemfC =  ((AdcResult.ADCRESULT6)*0.00024414)-BemfC_offset;
-					  current[0] = -((AdcResult.ADCRESULT0)*0.00024414-IA_offset)*giqCurrentScaler;
-					  current[1] = -((AdcResult.ADCRESULT1)*0.00024414-IB_offset)*giqCurrentScaler;
-					  current[2] = -((AdcResult.ADCRESULT2)*0.00024414-IC_offset)*giqCurrentScaler;
-					  // Lopass Filter 필터 (IIR필터, 40K샘플링 / 3K cut-frequency )
-					  iqX[1] = iqX[0];
-					  iqY[1] = iqY[0];
-					  iqX[0] = current[0] + current[1] + current[2];
-					  iqY[0] = (iqB[0]*iqX[0] + iqB[1]*iqX[1] - iqA[1]*iqY[1]) * iqG;
-					  DCbus_current = iqY[0];
-				 }
-
-				#if (CURRENT_AVG)
-				 DCcurrent_Sum += DCbus_current;
-				 ++DCcurrent_Cnt;
-				#endif
-				#endif
-
-				#ifdef DSP2803x_DEVICE_H
-				 BemfA =  _IQ15toIQ((AdcResult.ADCRESULT4<<3)-BemfA_offset);
-				 BemfB =  _IQ15toIQ((AdcResult.ADCRESULT5<<3)-BemfB_offset);
-				 BemfC =  _IQ15toIQ((AdcResult.ADCRESULT6<<3)-BemfC_offset);
-				  // IIR 필터
-				 iqX[1] = iqX[0];
-				 iqX[0] = current[0] + current[1] + current[2];
-				 iqY[1] = iqY[0];
-				 iqY[0] = _IQmpy(iqB[0], iqX[0]) + _IQmpy(iqB[1],iqX[1]) - _IQmpy(iqA[1],iqY[1]);
-				#endif
-
-			// ------------------------------------------------------------------------------
-			//   Connect inputs of the RMP module and call the Ramp control macro.
-			// ------------------------------------------------------------------------------
-				 if (SpeedLoopFlag) {
-					  rc1.TargetValue = SpeedRef;
-				 } else {
-					  rc1.TargetValue = 0.3;
-					  //rc1.RampDelayMax = 1;
-				 }
-				 RC_MACRO(rc1)
-
-			// ------------------------------------------------------------------------------
-			//   Connect inputs of the RMP3 module and call the Ramp control 3 macro.
-			// ------------------------------------------------------------------------------
-				 rmp3.DesiredInput = CmtnPeriodTarget;
-				 rmp3.Ramp3Delay = RampDelay;
-				 RC3_MACRO(rmp3)
-
-			// ------------------------------------------------------------------------------
-			//   Connect inputs of the IMPULSE module and call the Impulse macro.
-			// ------------------------------------------------------------------------------
-				  impl1.Period = rmp3.Out;
-				  IMPULSE_MACRO(impl1)
-
-				 if (!SensorlessFlag) {
-				// ------------------------------------------------------------------------------
-				//    Connect inputs of the HALL module and call the Hall sensor read macro.
-				// ------------------------------------------------------------------------------
-					  hall1.HallMapPointer = (int16)mod1.Counter;
-					  HALL3_READ_MACRO(hall1)	// 내부에 하드웨어에 따라 다른 설정 옵션 있음
-
-					  if (hall1.Revolutions>=0)
-						 ClosedFlag=true;
-
-					// ------------------------------------------------------------------------------
-					//    Connect inputs of the MOD6 module and call the Modulo 6 counter macro.
-					// ------------------------------------------------------------------------------
-					  if (ClosedFlag==false) {
-						  mod1.TrigInput = impl1.Out;
-						  mod1.Counter = (int32)hall1.HallMapPointer;
-					  } else {
-						  mod1.TrigInput = (int32)hall1.CmtnTrigHall;
-					  }
-
-				 } else {	// Sensorless
-
-					// test
-					hall1.HallMapPointer = (int16)mod1.Counter;
-					HALL3_READ_MACRO(hall1)
-
-				   // ------------------------------------------------------------------------------
-				   //    Connect inputs of the MOD6 module and call the Modulo 6 counter macro.
-				   // ------------------------------------------------------------------------------
-					 // Switch from open-loop to closed-loop operation by Ramp3DoneFlag variable
-					  if (rmp3.Ramp3DoneFlag == false) {
-						 mod1.TrigInput = impl1.Out;        // open-loop operation
-					  } else {
-						 mod1.TrigInput = cmtn1.CmtnTrig;   // closed-loop operation
-					  }
-				 }
-
-				 if (Direction == 1) {
-					  MOD6CNT_MACRO(mod1)
-				 } else {
-					  MOD6CNT_RVS_MACRO(mod1)
-				 }
-
-			// ------------------------------------------------------------------------------
-			//    Connect inputs of the RMP2 module and call the Ramp control 2 macro.
-			// ------------------------------------------------------------------------------
-				 rmp2.DesiredInput = DFuncDesired;
-				 RC2_MACRO(rmp2)
-
-		    // ------------------------------------------------------------------------------
-		    //   Connect inputs of the PID_REG3 module and call the PID speed controller
-		    //	 macro.
-		    // ------------------------------------------------------------------------------
-				 if ((gu16CtrlMode == C_CASCADE)||(gu16CtrlMode == C_SPEED)) {
-					  //pid1_spd.term.Ref = SpeedRef;
-					  pid1_spd.term.Ref = rc1.SetpointValue;
-					  pid1_spd.term.Fbk = speed1.Speed;
-					  PID_GR_MACRO(pid1_spd)
-				 }
-
-			  // ------------------------------------------------------------------------------
-			  //    Connect inputs of the PID_REG3 module and call the PID current controller
-			  //	  macro.
-			  // ------------------------------------------------------------------------------
-			  // Switch from fixed duty-cycle or controlled Speed duty-cycle by SpeedLoopFlag variable
-			  if ((gu16CtrlMode == C_CASCADE)||(gu16CtrlMode == C_CURRENT)) {
-				 if(SpeedLoopFlag == FALSE) {
-					pid1_idc.term.Ref = CurrentStartup;
-				 } else {
-					  if (gu16CtrlMode==C_CASCADE) {
-						  pid1_idc.term.Ref = pid1_spd.term.Out;
-					  } else {
-						  pid1_idc.term.Ref = CurrentSet;
-					  }
-				 }
-				 //pid1_idc.term.Fbk = DCbus_current;
-				#if (CURRENT_AVG)
-				 pid1_idc.term.Fbk = DCcurrent_Fbk;
-				#else
-				 pid1_idc.term.Fbk = DCbus_current;
-				#endif
-
-				 PID_GR_MACRO(pid1_idc)
-			  }
-
-			// ------------------------------------------------------------------------------
-			//    Set the speed closed loop flag once the speed is built up to a desired value.
-			// ------------------------------------------------------------------------------
-				 if ( rc1.EqualFlag == 0x7FFFFFFF ) {
-					  SpeedLoopFlag = true;
-				 }
-
-			// ------------------------------------------------------------------------------
-			//    Connect inputs of the PWM_DRV module and call the PWM signal generation
-			//    update macro.
-			// ------------------------------------------------------------------------------
-			// Switch from fixed duty-cycle or controlled Speed duty-cycle by SpeedLoopFlag variable
-				 if (SpeedLoopFlag == false){
-					  pwm1.DutyFunc = rmp2.Out;                 // fixed duty-cycle
-					  pid1_spd.data.ui=0;
-					  pid1_spd.data.i1=0;
-					  pid1_idc.data.ui=0;
-					  pid1_idc.data.i1=0;
-				 } else {
-					  if ( gu16CtrlMode == C_SPEED ) {
-					      pwm1.DutyFunc = (int16)_IQtoQ15(pid1_spd.term.Out);   // controlled Speed duty-cycle
-					  } else if ((gu16CtrlMode == C_CASCADE)||(gu16CtrlMode == C_CURRENT))  {
-						  pwm1.DutyFunc = (int16)_IQtoQ15(pid1_idc.term.Out);
-					  }
-				 }
-
-				 if (!SensorlessFlag ) {
-					  if (ClosedFlag==true) {
-						  if (hall1.CmtnTrigHall==0x7FFF) {
-
-							PreviousState = pwm1.CmtnPointer;
-							  // Comment the following if-else-if statements in case of
-							  // inverted Hall logics for commutation states.
-							if (gdsSystem.u16MotorType == M_W78) {
-							  if (hall1.HallGpioAccepted==5)
-								pwm1.CmtnPointer = 0;
-
-							  else if (hall1.HallGpioAccepted==1)
-								pwm1.CmtnPointer = 1;
-
-							  else if (hall1.HallGpioAccepted==3)
-								pwm1.CmtnPointer = 2;
-
-							  else if (hall1.HallGpioAccepted==2)
-								pwm1.CmtnPointer = 3;
-
-							  else if (hall1.HallGpioAccepted==6)
-								pwm1.CmtnPointer = 4;
-
-							  else if (hall1.HallGpioAccepted==4)
-								pwm1.CmtnPointer = 5;
-							} else if (gdsSystem.u16MotorType == M_W750) {
-
-							  if (hall1.HallGpioAccepted==2)
-								pwm1.CmtnPointer = 0;
-
-							  else if (hall1.HallGpioAccepted==6)
-								pwm1.CmtnPointer = 1;
-
-							  else if (hall1.HallGpioAccepted==4)
-								pwm1.CmtnPointer = 2;
-
-							  else if (hall1.HallGpioAccepted==5)
-								pwm1.CmtnPointer = 3;
-
-							  else if (hall1.HallGpioAccepted==1)
-								pwm1.CmtnPointer = 4;
-
-							  else if (hall1.HallGpioAccepted==3)
-								pwm1.CmtnPointer = 5;
-						    }
-
-							  /*
-
-							  // Comment the following if-else-if statements in case of
-							  // non-inverted Hall logics for commutation states.
-							  if (hall1.HallGpioAccepted==2)
-								pwm1.CmtnPointer = 0;
-
-							  else if (hall1.HallGpioAccepted==6)
-								pwm1.CmtnPointer = 1;
-
-							  else if (hall1.HallGpioAccepted==4)
-								pwm1.CmtnPointer = 2;
-
-							  else if (hall1.HallGpioAccepted==5)
-								pwm1.CmtnPointer = 3;
-
-							  else if (hall1.HallGpioAccepted==1)
-								pwm1.CmtnPointer = 4;
-
-							  else if (hall1.HallGpioAccepted==3)
-								pwm1.CmtnPointer = 5;
-							  */
-
-						  }    // Hall1.CmtnTrigHall == 0x7FFF
-					  } else {  // ClosedFlag==true
-						  pwm1.CmtnPointer = (int16)mod1.Counter;
-					  }
-				 } else {
-					  pwm1.CmtnPointer = (int16)mod1.Counter;
-
-				 }
-
-				 if (Direction == 1) {
-					  BLDCPWM_MACRO(pwm1);
-				 } else {
-					  BLDCPWM_RVS_MACRO(pwm1);
-				 }
-
-			// ------------------------------------------------------------------------------
-			//    Connect inputs of the SPEED_PR module and call the speed calculation macro.
-			// ------------------------------------------------------------------------------
-				 if (!SensorlessFlag ) {	// Sensored
-					 if (Direction == 1) {
-						 if ((pwm1.CmtnPointer==5)&&(PreviousState==4)&&(hall1.CmtnTrigHall==0x7FFF))
-						 {
-							 speed1.TimeStamp = VirtualTimer;
-							 SPEED_PR_MACRO(speed1)
-						 }
-						#if (CURRENT_AVG)
-						 if (DCcurrent_SumCnt == 10) {
-							 DCcurrent_Fbk = DCcurrent_Sum / DCcurrent_Cnt;
-							 DCcurrent_Sum = 0;
-							 DCcurrent_Cnt = 0;
-							 DCcurrent_SumCnt = 0;
-						 } else {
-							 ++DCcurrent_SumCnt;
-						 }
-						#endif
-					 } else {
-						 if ((pwm1.CmtnPointer==4)&&(PreviousState==5)&&(hall1.CmtnTrigHall==0x7FFF)) {
-							 speed1.TimeStamp = VirtualTimer;
-							 SPEED_PR_MACRO(speed1)
-						 }
-						#if (CURRENT_AVG)
-						 if (DCcurrent_SumCnt == 10) {
-							 DCcurrent_Fbk = DCcurrent_Sum / DCcurrent_Cnt;
-							 DCcurrent_Sum = 0;
-							 DCcurrent_Cnt = 0;
-							 DCcurrent_SumCnt = 0;
-						 } else {
-							 ++DCcurrent_SumCnt;
-						 }
-						#endif
-					 }
-				 } else {	// Sensorless
-					if ((gdsSystem.u16BoardType != B_DRV8301HC) && (gdsSystem.u16BoardType != B_IMMB)){
-						  cmtn1.Va = BemfA;
-						  cmtn1.Vb = BemfB;
-						  cmtn1.Vc = BemfC;
-					} else {
-						  cmtn1.Va = BemfA * 3;
-						  cmtn1.Vb = BemfB * 3;
-						  cmtn1.Vc = BemfC * 3;
-					}
-
-					cmtn1.CmtnPointer = mod1.Counter;
-					cmtn1.VirtualTimer = VirtualTimer;
-					CMTN_TRIG_MACRO(cmtn1)
-
-					speed1.EventPeriod = cmtn1.RevPeriod;
-					SPEED_PR_MACRO(speed1)
-
-				 }
-			// ------------------------------------------------------------------------------
-			//    Connect inputs of the PWMDAC module
-			// ------------------------------------------------------------------------------
-				 PwmDacCh1 = (int16)(mod1.Counter * 4096.0L);
-				 PwmDacCh2 = _IQtoQ15(BemfA);
-				 PwmDacCh3 = _IQtoQ15(BemfB);
-			//      PwmDacCh3 = _IQtoQ15(BemfC);
-
-			// ------------------------------------------------------------------------------
-			//    Connect inputs of the DATALOG module
-			// ------------------------------------------------------------------------------
-
-				 DlogCh1 = pwm1.CmtnPointer;
-				 DlogCh2 = _IQtoQ15(DCbus_current/5.);
-			     //DlogCh2 = hall1.HallGpioAccepted;
-				 //DlogCh3 = _IQtoQ15(BemfA);
-				 DlogCh3 = _IQtoQ15(current[0]/5.);
-				 DlogCh4 = _IQtoQ15(BemfA);
-
-
-	#endif
-
-
-
-	// ------------------------------------------------------------------------------
-	//    Call the PWMDAC update macro.
-	// ------------------------------------------------------------------------------
-		if (gdsSystem.u16BoardType != B_IMMB){
-			PWMDAC_MACRO(pwmdac1)
-		}
-
-	// ------------------------------------------------------------------------------
-	//    Call the DATALOG update function.
-	// ------------------------------------------------------------------------------
-		dlog.update(&dlog);
-
-	// ------------------------------------------------------------------------------
-	//    Increase virtual timer and force 15 bit wrap around
-	// ------------------------------------------------------------------------------
-		VirtualTimer++;
-		VirtualTimer &= 0x00007FFF;
-		}//end else
-	} // CALIBRATION
-	} // end if(RunMotor)
-
-
-#if (DSP2803x_DEVICE_H==1)||(F2806x_DEVICE_H==1)
-/* Enable more interrupts from this timer
-	EPwm1Regs.ETCLR.bit.INT = 1;
-
-// Acknowledge interrupt to recieve more interrupts from PIE group 3
-	PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-*/
-
-// Acknowledge interrupt to recieve more interrupts from PIE group 1
-	PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
-
-#endif
-
-#if (DSP280x_DEVICE_H==1)
-// Enable more interrupts from this timer
-	EPwm1Regs.ETCLR.bit.INT = 1;
-
-// Acknowledge interrupt to recieve more interrupts from PIE group 3
-	PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-#endif
 
 
 }// ISR Ends Here

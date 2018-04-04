@@ -18,7 +18,7 @@ Hardware Configuration.
 ------------------------------------------------------------------------------*/
 
 enum { B_BOOST8301, B_BOOST8305, B_DRV8301HC, B_IMMB};
-enum { M_W78, M_W750 };
+enum { M_W78, M_W750, M_W750SM };
 enum { C_CURRENT, C_SPEED, C_CASCADE, C_POSITION };
 
 typedef struct {
@@ -33,6 +33,7 @@ typedef struct {
 
 //#define W78
 #define W750
+//#define SY_MTR
 
 #define DRV830X
 #define DRV_GAIN 10
@@ -112,25 +113,41 @@ This line sets the BUILDLEVEL to one of the available choices.
 
 #define POLES_W78   8						// Number of poles
 #define POLES_W750  4						// Number of poles
+#define POLES_SAMYANG  8
 
 // Define the base quantites 
 #define BASE_VOLTAGE         24		        // Base peak phase voltage (volt), maximum measurable DC Bus/sqrt(3)
+
 // 최대 전류 36A, 부부하 전류는 1.2A정도임
 #define BASE_CURRENT_W750    36            	// Base peak phase current (amp) , maximum measurable peak current
-#define NOLOAD_CURRENT_W750  1.2          	// Base peak phase current (amp) , maximum measurable peak current
+//#define NOLOAD_CURRENT_W750  1.2          	// Base peak phase current (amp) , maximum measurable peak current
+
 // 최대전류 5A, 부부하 전류 0.35A정도임
 #define BASE_CURRENT_W78     5            	// Base peak phase current (amp) , maximum measurable peak current
 #define NOLOAD_CURRENT_W78   0.35          	// Base peak phase current (amp) , maximum measurable peak current
 
 #define BASE_FREQ_W78  	     268           	// Base electrical frequency (Hz)	[Load]		, 4000 rpm
 #define BASE_FREQ_W750 	     100           	// Base electrical frequency (Hz)	[Load]		, 3000 rpm
+#define BASE_FREQ_SAMYANG    100
+
+//#define MOTOR_TYPE 		M_W750
+//#define POLES			POLES_W750
+//#define BASE_FREQ		BASE_FREQ_W750
+//#define BASE_CURRENT	BASE_CURRENT_W750
+
 
 #ifdef W750
 #define MOTOR_TYPE 		M_W750
 #define POLES			POLES_W750
 #define BASE_FREQ		BASE_FREQ_W750
 #define BASE_CURRENT	BASE_CURRENT_W750
+#endif
 
+#ifdef SY_MTR
+#define MOTOR_TYPE 		M_W750SM
+#define POLES			POLES_SAMYANG
+#define BASE_FREQ		BASE_FREQ_SAMYANG
+#define BASE_CURRENT	BASE_CURRENT_W750
 #endif
 
 #define CURRENT_AVG		0
